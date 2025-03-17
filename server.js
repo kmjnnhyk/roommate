@@ -43,6 +43,7 @@ app.use("*all", async (req, res) => {
     let template;
     /** @type {import('./src/entry-server.ts').render} */
     let render;
+    console.log("express server changed", url);
     if (!isProduction) {
       // Always read fresh template in development
       template = await fs.readFile("./index.html", "utf-8");
