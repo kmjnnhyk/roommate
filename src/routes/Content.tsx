@@ -1,4 +1,4 @@
-import useNavigate from "../hooks/useNavigate.hook";
+import { useNavigate } from "../router";
 
 export default function Content() {
   const { navigate } = useNavigate();
@@ -9,7 +9,7 @@ export default function Content() {
       <button
         type="button"
         onClick={() => {
-          navigate("home");
+          navigate("");
         }}
       >
         go back
