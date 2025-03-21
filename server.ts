@@ -1,0 +1,129 @@
+import fs from "node:fs/promises";
+import { Transform } from "node:stream";
+import express from "express";
+import type { ViteDevServer } from "vite";
+import routerConfig from "./router.config.ts";
+import type { RenderFunc } from "./src/entry-server.tsx";
+
+// Constants
+const isProduction = process.env.NODE_ENV === "production";
+const port = process.env.PORT || 5173;
+const base = process.env.BASE || "/";
+const ABORT_DELAY = 10000;
+
+// Cached production assets
+const templateHtml = isProduction
+  ? await fs.readFile("./dist/client/index.html", "utf-8")
+  : "";
+
+// Create http server
+const app = express();
+
+// Add Vite or respective production middlewares
+let vite: ViteDevServer;
+if (!isProduction) {
+  const { createServer } = await import("vite");
+  vite = await createServer({
+    server: { middlewareMode: true },
+    appType: "custom",
+    base,
+  });
+  app.use(vite.middlewares);
+} else {
+  const compression = (await import("compression")).default;
+  const sirv = (await import("sirv")).default;
+  app.use(compression());
+  app.use(base, sirv("./dist/client", { extensions: [] }));
+}
+
+// Serve HTML
+app.use("*all", async (req, res) => {
+  try {
+    const url = req.originalUrl.replace(base, "");
+
+    let template: string;
+    let render: RenderFunc;
+    console.log("express server changed", url);
+    if (!isProduction) {
+      // Always read fresh template in development
+      template = await fs.readFile("./index.html", "utf-8");
+      template = await vite.transformIndexHtml(url, template);
+      render = (await vite.ssrLoadModule("/src/entry-server.tsx")).render;
+    } else {
+      template = templateHtml;
+      render = (await import("./dist/server/entry-server.js"))
+        .render as RenderFunc;
+    }
+
+    let didError = false;
+
+    const matchedRouteConfig = routerConfig.find(
+      (route) => route.path === `/${url}`,
+    );
+    if (!matchedRouteConfig) {
+      res.status(404).send("Not found");
+      return;
+    }
+
+    const shouldSSR = matchedRouteConfig.ssr;
+
+    if (shouldSSR) {
+      const { pipe, abort } = render({
+        url,
+        stream: shouldSSR,
+        options: {
+          onShellError() {
+            res.status(500);
+            res.set({ "Content-Type": "text/html" });
+            res.send("<h1>Something went wrong</h1>");
+          },
+          onShellReady() {
+            res.status(didError ? 500 : 200);
+            res.set({ "Content-Type": "text/html" });
+
+            const transformStream = new Transform({
+              transform(chunk, encoding, callback) {
+                res.write(chunk, encoding);
+                callback();
+              },
+            });
+
+            const [htmlStart, htmlEnd] = template.split("<!--app-html-->");
+
+            res.write(htmlStart);
+
+            transformStream.on("finish", () => {
+              res.end(htmlEnd);
+            });
+
+            pipe(transformStream);
+          },
+          onError(error) {
+            didError = true;
+            console.error(error);
+          },
+        },
+      });
+
+      setTimeout(() => {
+        abort();
+      }, ABORT_DELAY);
+    }
+
+    if (!shouldSSR) {
+      const appHtml = render({ url, stream: shouldSSR }); // renderToString은 스트림을 반환하지 않으므로 pipe를 사용하지 않습니다.
+      const [htmlStart, htmlEnd] = template.split("<!--app-html-->");
+      const html = htmlStart + appHtml + htmlEnd;
+      res.status(200).set({ "Content-Type": "text/html" }).end(html);
+    }
+  } catch (e) {
+    vite?.ssrFixStacktrace(e);
+    console.log(e.stack);
+    res.status(500).end(e.stack);
+  }
+});
+
+// Start http server
+app.listen(port, () => {
+  console.log(`Server started at http://localhost:${port}`);
+});

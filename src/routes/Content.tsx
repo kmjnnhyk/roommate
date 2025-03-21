@@ -9,7 +9,7 @@ export default function Content() {
       <button
         type="button"
         onClick={() => {
-          navigate("");
+          navigate("/");
         }}
       >
         go back
