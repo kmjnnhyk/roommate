@@ -21,6 +21,6 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src"],
+  "include": ["src", "router.config.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

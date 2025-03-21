@@ -1,4 +1,4 @@
-const routerConfig = [
+export const routerConfig = [
   {
     path: "/",
     ssr: false,

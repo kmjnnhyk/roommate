@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import { Transform } from "node:stream";
 import express from "express";
 import type { ViteDevServer } from "vite";
-import routerConfig from "./router.config.ts";
+import { routerConfig } from "./router.config.ts";
 import type { RenderFunc } from "./src/entry-server.tsx";
 
 // Constants
@@ -57,65 +57,45 @@ app.use("*all", async (req, res) => {
 
     let didError = false;
 
-    const matchedRouteConfig = routerConfig.find(
-      (route) => route.path === `/${url}`,
-    );
-    if (!matchedRouteConfig) {
-      res.status(404).send("Not found");
-      return;
-    }
-
-    const shouldSSR = matchedRouteConfig.ssr;
-
-    if (shouldSSR) {
-      const { pipe, abort } = render({
-        url,
-        stream: shouldSSR,
-        options: {
-          onShellError() {
-            res.status(500);
-            res.set({ "Content-Type": "text/html" });
-            res.send("<h1>Something went wrong</h1>");
-          },
-          onShellReady() {
-            res.status(didError ? 500 : 200);
-            res.set({ "Content-Type": "text/html" });
-
-            const transformStream = new Transform({
-              transform(chunk, encoding, callback) {
-                res.write(chunk, encoding);
-                callback();
-              },
-            });
-
-            const [htmlStart, htmlEnd] = template.split("<!--app-html-->");
-
-            res.write(htmlStart);
-
-            transformStream.on("finish", () => {
-              res.end(htmlEnd);
-            });
-
-            pipe(transformStream);
-          },
-          onError(error) {
-            didError = true;
-            console.error(error);
-          },
+    const { pipe, abort } = render({
+      url,
+      options: {
+        onShellError() {
+          res.status(500);
+          res.set({ "Content-Type": "text/html" });
+          res.send("<h1>Something went wrong</h1>");
         },
-      });
+        onShellReady() {
+          res.status(didError ? 500 : 200);
+          res.set({ "Content-Type": "text/html" });
 
-      setTimeout(() => {
-        abort();
-      }, ABORT_DELAY);
-    }
+          const transformStream = new Transform({
+            transform(chunk, encoding, callback) {
+              res.write(chunk, encoding);
+              callback();
+            },
+          });
 
-    if (!shouldSSR) {
-      const appHtml = render({ url, stream: shouldSSR }); // renderToString은 스트림을 반환하지 않으므로 pipe를 사용하지 않습니다.
-      const [htmlStart, htmlEnd] = template.split("<!--app-html-->");
-      const html = htmlStart + appHtml + htmlEnd;
-      res.status(200).set({ "Content-Type": "text/html" }).end(html);
-    }
+          const [htmlStart, htmlEnd] = template.split("<!--app-html-->");
+
+          res.write(htmlStart);
+
+          transformStream.on("finish", () => {
+            res.end(htmlEnd);
+          });
+
+          pipe(transformStream);
+        },
+        onError(error) {
+          didError = true;
+          console.error(error);
+        },
+      },
+    });
+
+    setTimeout(() => {
+      abort();
+    }, ABORT_DELAY);
   } catch (e) {
     vite?.ssrFixStacktrace(e);
     console.log(e.stack);
