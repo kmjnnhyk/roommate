@@ -1,15 +1,16 @@
 import { useNavigate } from "../router";
 
 export default function Content() {
-  const { navigate } = useNavigate();
+  const { goBack, getSearchParams } = useNavigate();
+  const params = getSearchParams("/content");
 
   return (
     <div>
-      content
+      {`content ${params.id}`}
       <button
         type="button"
         onClick={() => {
-          navigate("/");
+          goBack();
         }}
       >
         go back

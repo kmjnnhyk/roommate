@@ -2,7 +2,6 @@ import fs from "node:fs/promises";
 import { Transform } from "node:stream";
 import express from "express";
 import type { ViteDevServer } from "vite";
-import { routerConfig } from "./router.config.ts";
 import type { RenderFunc } from "./src/entry-server.tsx";
 
 // Constants

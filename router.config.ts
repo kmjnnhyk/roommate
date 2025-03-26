@@ -1,12 +1,8 @@
-export const routerConfig = [
-  {
-    path: "/",
+export const routerConfig = {
+  "/": {
     ssr: false,
   },
-  {
-    path: "/content",
+  "/content": {
     ssr: true,
   },
-];
-
-export default routerConfig;
+};

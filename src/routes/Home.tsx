@@ -17,7 +17,7 @@ export default function Home() {
         <button
           type="button"
           onClick={() => {
-            navigate("/content");
+            navigate("/content", { id: "7" });
           }}
         >
           content
