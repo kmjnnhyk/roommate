@@ -1,84 +1,55 @@
-import {
-  type ReactNode,
-  createContext,
-  use,
-  useCallback,
-  useEffect,
-  useState,
-} from "react";
-import { routerConfig } from "../router.config";
+import { createContext, use, useCallback, useEffect, useState } from "react";
+import { type RouteParam, type RoutePath, getMatchedRoute } from "./router.gen";
 
-export type RouterPath = keyof typeof routerConfig;
-
-type SearchParamsConfig = {
-  "/": never;
-  "/content": { id: string };
-};
-
-type SearchParamsMapper<Path> = {
-  [Property in keyof Path]: Path[Property];
-};
-
-type SearchParams = SearchParamsMapper<SearchParamsConfig>;
+declare global {
+  interface DocumentEventMap {
+    urlChanged: CustomEvent<{ location: RoutePath }>;
+  }
+}
 
 export const RouterContext = createContext<{
-  currentPath: RouterPath;
-  navigate: {
-    (path: "/", params?: never): void;
-    (path: "/content", params: SearchParams["/content"]): void;
-  };
+  navigate: <T extends RoutePath>(
+    path: T,
+    ...args: RouteParam[T] extends never ? [] : [params: RouteParam[T]]
+  ) => void;
   goBack: () => void;
-  getSearchParams: <T extends RouterPath>(path: T) => SearchParams[T];
+  getSearchParams: <T extends RoutePath>(path: T) => RouteParam[T];
 }>({
-  currentPath: "/",
   navigate: () => {},
   goBack: () => {},
   getSearchParams: () => undefined as never,
 });
 
-export const RouterProvider = ({ children }: { children: ReactNode }) => {
-  const [currentPath, setCurrentPath] = useState<RouterPath>("/");
+export const RouterProvider = () => {
+  const [currentPath, setCurrentPath] = useState<RoutePath>("/");
 
   const navigate = useCallback(
-    <T extends RouterPath>(location: T, params?: SearchParams[T]) => {
-      const matchedRouteConfig = routerConfig[location];
-      if (!matchedRouteConfig) {
-        throw new Error("navigate error: no matched config");
-      }
+    <T extends RoutePath>(location: T, param?: RouteParam[T]) => {
+      const evt = new CustomEvent("urlChanged", { detail: { location } });
+      document.dispatchEvent(evt);
 
-      const searchParams = params ? new URLSearchParams(params) : undefined;
+      const searchParams = param ? Object.values(param).at(0) : undefined;
       const url = searchParams
-        ? `${location}?${searchParams.toString()}`
+        ? location.replace(/(\$[a-zA-Z]\w*)$/, searchParams)
         : `${location}`;
+
       window.history.pushState({}, "", url); // url 경로를 path로 변경
-
-      setCurrentPath(location); // currentPath를 path로 변경. client단에서 현재 어떤 페이지 컴포넌트를 보여줄지 결정할 때 사용한다.
-
-      const { ssr } = matchedRouteConfig;
-      if (ssr) {
-        fetch(`${url}`); // 서버에게 해당 path로 데이터를 요청한다.
-      }
+      fetch(`${url}`); // 서버에 요청을 보낸다. 서버에서 해당 url에 대한 컴포넌트를 렌더링해서 응답한다.
     },
     [],
   );
-
-  // const getSearchParams = () => {
-  //   const searchParams = new URLSearchParams(window.location.search);
-  //   console.log("2222", searchParams.get("id"));
-  //   return window.location.search;
-  // };
 
   const goBack = useCallback(() => {
     window.history.back();
   }, []);
 
-  const getSearchParams = <T extends RouterPath>(path: T): SearchParams[T] => {
+  const getSearchParams = <T extends RoutePath>(path: T): RouteParam[T] => {
     const searchParams = new URLSearchParams(window.location.search);
 
-    if (path === "/content") {
-      let param: SearchParams[T] = {} as SearchParams[T];
+    if (path === "/") {
+      let param: RouteParam[T] = {} as RouteParam[T];
       searchParams.forEach((value, key) => {
-        param = { [key]: value } as SearchParams[T];
+        param = { [key]: value } as RouteParam[T];
       });
       return param;
     }
@@ -87,19 +58,22 @@ export const RouterProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    function handlePopState() {
-      setCurrentPath(window.location.pathname as RouterPath);
-    }
+    console.log("useEffect", window.location.pathname);
 
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
+    document.addEventListener("urlChanged", (event) => {
+      console.log("url changed", event.detail.location);
+      setCurrentPath(event.detail.location);
+    });
+
+    window.addEventListener("popstate", () => {
+      setCurrentPath(window.location.pathname as RoutePath);
+    });
   }, []);
+  const MatchedRoute = getMatchedRoute(currentPath);
 
   return (
-    <RouterContext.Provider
-      value={{ currentPath, navigate, goBack, getSearchParams }}
-    >
-      {children}
+    <RouterContext.Provider value={{ navigate, goBack, getSearchParams }}>
+      <MatchedRoute />
     </RouterContext.Provider>
   );
 };

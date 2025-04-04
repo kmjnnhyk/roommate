@@ -4,7 +4,6 @@ import {
   type RenderToPipeableStreamOptions,
   renderToPipeableStream,
 } from "react-dom/server";
-import App from "./app";
 import { RouterProvider } from "./router";
 
 type RenderFuncProps = {
@@ -17,9 +16,7 @@ export type RenderFunc = (props: RenderFuncProps) => PipeableStream;
 export const render: RenderFunc = ({ options }) => {
   return renderToPipeableStream(
     <StrictMode>
-      <RouterProvider>
-        <App />
-      </RouterProvider>
+      <RouterProvider />
     </StrictMode>,
     options,
   );
