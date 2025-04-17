@@ -7,10 +7,11 @@ export default function Page() {
     'use server';
 
     const cookieStore = await cookies();
-
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
-    cookieStore.set('session', 'phone', {
+    const isHost = true;
+
+    cookieStore.set('auth', isHost ? 'HOST' : 'STAFF', {
       httpOnly: true,
       secure: true,
       expires: expiresAt,
@@ -18,8 +19,9 @@ export default function Page() {
       path: '/',
     });
 
-    redirect('/room');
+    redirect(isHost ? '/host/dashboard' : '/staff/dashboard');
   }
+
   return (
     <Modal>
       <form action={login}>
