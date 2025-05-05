@@ -1,43 +1,67 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { Icon } from '@/components/ui/Icon';
+import { useTheme } from 'tamagui';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const theme = useTheme();
 
   return (
     <Tabs
+      initialRouteName="index"
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarActiveTintColor: theme.brandColor.val,
+        tabBarInactiveTintColor: theme.borderColor.val,
+        tabBarInactiveBackgroundColor: theme.background.val,
+        tabBarActiveBackgroundColor: theme.background.val,
         headerShown: false,
         tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            // Use a transparent background on iOS to show the blur effect
-            position: 'absolute',
-          },
-          default: {},
-        }),
-      }}>
+        tabBarStyle: {
+          backgroundColor: theme.background.val,
+          paddingTop: 12,
+        },
+        tabBarShowLabel: false,
+      }}
+    >
       <Tabs.Screen
-        name="index"
+        name="checkin"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          title: 'checkin',
+          tabBarIcon: ({ focused }) => (
+            <Icon
+              size={28}
+              name="checkbox-outline"
+              color={focused ? theme.brandColor.val : theme.borderColor.val}
+            />
+          ),
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="index"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: 'home',
+          tabBarIcon: ({ focused }) => (
+            <Icon
+              size={28}
+              name="home"
+              color={focused ? theme.brandColor.val : theme.borderColor.val}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="schedule"
+        options={{
+          title: 'schedule',
+          tabBarIcon: ({ focused }) => (
+            <Icon
+              size={28}
+              name="calendar"
+              color={focused ? theme.brandColor.val : theme.borderColor.val}
+            />
+          ),
         }}
       />
     </Tabs>

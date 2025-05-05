@@ -4,5 +4,5 @@
   "[javascript]": {
     "editor.defaultFormatter": "biomejs.biome"
   },
-  "cSpell.words": ["turbopack"]
+  "cSpell.words": ["checkin", "chromeless", "tamagui", "turbopack"]
 }
