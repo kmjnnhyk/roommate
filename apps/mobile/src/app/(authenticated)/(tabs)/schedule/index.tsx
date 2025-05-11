@@ -10,9 +10,9 @@ import {
   View,
 } from 'tamagui';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Background } from '@/components/ui/Background'; // Assuming you have a Background component
+import { Background } from '@/components/ui/Background';
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState, useMemo } from 'react'; // Import useMemo
+import React, { useState, useMemo } from 'react';
 import { useRouter } from 'expo-router';
 
 // Mock data interface
@@ -176,7 +176,6 @@ export default function ScheduleScreen() {
   const handleAddSchedule = () => {
     // Navigate to add screen
     // router.push('/schedule/add'); // Use the correct path for your add screen
-    console.log('Add');
     router.push({
       pathname: '/schedule/create/[month]', // Ensure the file is named [id].tsx
       params: { month: currentDate.getMonth() + 1 }, // Pass the current month (1-indexed)
