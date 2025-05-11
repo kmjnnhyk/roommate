@@ -26,9 +26,9 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="checkin"
+        name="check-in"
         options={{
-          title: 'checkin',
+          title: 'check-in',
           tabBarIcon: ({ focused }) => (
             <Icon
               size={28}

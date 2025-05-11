@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
   YStack,
   XStack,
@@ -6,7 +5,6 @@ import {
   Button,
   Avatar,
   Card,
-  ListItem,
   ScrollView,
   useTheme,
   View,
@@ -16,6 +14,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Background } from '@/components/ui/Background';
+import { router } from 'expo-router';
+import { useSession } from '@/providers/session';
 // Mock Room Status Data
 interface RoomStatus {
   id: string;
@@ -40,6 +40,8 @@ const SectionHeader = ({ title }: { title: string }) => (
 );
 
 export default function HomeScreen() {
+  const { session } = useSession();
+
   const theme = useTheme();
 
   // Mock staff data with image URLs
@@ -130,10 +132,6 @@ export default function HomeScreen() {
     },
   ];
 
-  const handleRegisterGuest = () => {
-    alert('게스트 등록 로직 실행');
-  };
-
   // Helper function to chunk array for grid layout
   const chunkArray = <T,>(arr: T[], size: number): T[][] =>
     Array.from({ length: Math.ceil(arr.length / size) }, (v, i) =>
@@ -176,7 +174,7 @@ export default function HomeScreen() {
                     color={theme.brandColor.val}
                   />
                 } // Use brandColor for icon
-                onPress={() => alert('Open Drawer')}
+                onPress={() => router.push('/(authenticated)/setting')}
               />
             </XStack>
 

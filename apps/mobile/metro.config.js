@@ -8,6 +8,8 @@ const monorepoRoot = path.resolve(projectRoot, '../..');
 
 const config = getDefaultConfig(projectRoot, { isCSSEnabled: true });
 
+const { resolver, transformer } = config;
+
 // 1. Watch all files within the monorepo
 config.watchFolders = [monorepoRoot];
 // 2. Let Metro know where to resolve packages and in what order
@@ -16,5 +18,14 @@ config.resolver.nodeModulesPaths = [
   path.resolve(monorepoRoot, 'node_modules'),
 ];
 config.resolver.sourceExts.push('mjs');
+config.resolver = {
+  ...resolver,
+  assetExts: resolver.assetExts.filter((ext) => ext !== 'svg'),
+  sourceExts: [...resolver.sourceExts, 'svg'],
+};
+config.transformer = {
+  ...transformer,
+  babelTransformerPath: require.resolve('react-native-svg-transformer/expo'),
+};
 
 module.exports = config;

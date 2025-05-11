@@ -149,7 +149,6 @@ export default function ScheduleCreateScreen() {
 
   // Function to handle saving the draft schedule
   const handleSaveSchedule = () => {
-    console.log('Saving Schedule:', draftSchedules);
     // Here you would typically convert draftSchedules into the format needed
     // (e.g., an array of Schedule objects) and send it to your backend/storage.
     // For now, just log it and go back.
@@ -161,7 +160,6 @@ export default function ScheduleCreateScreen() {
         finalSchedules.push({ date, staffName });
       }
     });
-    console.log('Converted Schedules:', finalSchedules);
 
     // TODO: Add logic to save `finalSchedules` (e.g., update mockSchedules in index or call API)
 
