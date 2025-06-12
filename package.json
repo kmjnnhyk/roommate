@@ -1,13 +1,13 @@
 {
   "private": true,
-  "name": "@acme/monorepo",
+  "name": "@roommate/monorepo",
   "scripts": {
     "dev": "turbo dev",
-    "dev:example": "turbo dev --filter=\"{./apps/example}...\"",
+    "dev:admin": "turbo dev --filter=\"{./apps/admin}...\"",
     "lint": "turbo lint",
     "test": "turbo test",
     "build": "turbo build",
-    "build:example": "turbo build --filter=\"...{./apps/example}\""
+    "build:admin": "turbo build --filter=\"...{./apps/admin}\""
   },
   "devDependencies": {
     "turbo": "^1.13.4",

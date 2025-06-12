@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "@acme/app-example",
+  "name": "@roommate/admin",
   "version": "1.0.0",
   "main": "expo-router/entry",
   "scripts": {
@@ -12,10 +12,10 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "eas-build-post-install": "pnpm run -w build:example"
+    "eas-build-post-install": "pnpm run -w build:admin"
   },
   "dependencies": {
-    "@acme/feature-home": "workspace:*",
+    "@roommate/feature-home": "workspace:*",
     "@expo/vector-icons": "^14.1.0",
     "@react-navigation/bottom-tabs": "^7.2.0",
     "@react-navigation/native": "^7.0.14",
@@ -42,7 +42,7 @@
     "react-native-webview": "13.13.5"
   },
   "devDependencies": {
-    "@acme/eslint-config": "workspace:*",
+    "@roommate/eslint-config": "workspace:*",
     "@babel/core": "^7.25.2",
     "@testing-library/react-native": "^13.2.0",
     "@types/jest": "^29.5.12",
@@ -52,7 +52,7 @@
     "typescript": "^5.3.3"
   },
   "eslintConfig": {
-    "extends": "@acme/eslint-config",
+    "extends": "@roommate/eslint-config",
     "ignorePatterns": [
       "node_modules",
       "build",
