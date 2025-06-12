@@ -1,6 +1,10 @@
 {
   "private": true,
   "name": "@roommate/monorepo",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "dev": "turbo dev",
     "dev:admin": "turbo dev --filter=\"{./apps/admin}...\"",
